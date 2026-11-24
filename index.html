@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Rising Lava Obby">
+  <title>Rising Lava Obby — Multiplication Tower</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='14' fill='%231b1f3b'/><path d='M10 50 L24 20 L38 34 L50 14 L54 50 Z' fill='%23ff5a36'/><rect x='24' y='10' width='16' height='16' rx='3' fill='%232ec4ff'/><rect x='27' y='15' width='3' height='4' fill='%23111'/><rect x='34' y='15' width='3' height='4' fill='%23111'/></svg>">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="top-bar">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">🌋</span>
+        <div class="brand-text">
+          <h1>Rising Lava Obby</h1>
+          <span class="brand-sub">Multiplication Tower</span>
+        </div>
+      </div>
+
+      <div class="top-actions">
+        <span id="biome-pill" class="pill pill-biome hidden" aria-live="polite">🍳 Noob Kitchen</span>
+        <button id="btn-lobby" class="btn-top hidden" type="button" title="Return to Lobby">
+          <span>🏠</span><span class="btn-label">Lobby</span>
+        </button>
+        <button id="btn-mute" class="btn-top" type="button" aria-pressed="false" title="Toggle Sound">
+          <span id="mute-icon">🔊</span><span class="btn-label">Sound</span>
+        </button>
+        <button id="btn-parent" class="btn-top btn-parent" type="button" title="Hold 1.1s for Parent Calibration">
+          <span class="hold-fill" id="parent-hold-fill"></span>
+          <span class="btn-parent-inner">⚙️ <span class="btn-label">Parent</span></span>
+        </button>
+      </div>
+    </header>
+
+    <main class="main-stage">
+      <!-- LOBBY SCREEN -->
+      <section id="screen-lobby" class="screen lobby-screen" aria-label="Player Lobby">
+        <div class="lobby-inner">
+          <div class="lobby-hero">
+            <h2>Choose Your Climber</h2>
+            <p>Equal-terms weight classes &amp; real-time Ghost Rival racing. Climb fast before the soup catches you!</p>
+          </div>
+
+          <div id="player-cards" class="player-cards" role="radiogroup" aria-label="Select Player">
+            <!-- Populated by UIController -->
+          </div>
+
+          <section class="panel-card focus-card" aria-label="Practice Focus">
+            <div class="panel-head">
+              <h3>🎯 Practice Focus</h3>
+              <span id="focus-status" class="panel-meta">All Tables Mix</span>
+            </div>
+            <div id="focus-picker" class="focus-picker" role="group" aria-label="Choose Times Table">
+              <!-- Populated by UIController -->
+            </div>
+          </section>
+
+          <div class="lobby-cta">
+            <button id="btn-start" class="btn-chunky btn-start" type="button">
+              🚀 Start Climbing
+            </button>
+          </div>
+
+          <div class="lobby-panels">
+            <section class="panel-card" aria-label="Hat Wardrobe">
+              <div class="panel-head">
+                <h3>🎩 Hat Wardrobe</h3>
+                <span id="wardrobe-owner" class="panel-meta"></span>
+              </div>
+              <div id="hat-wardrobe" class="hat-wardrobe">
+                <!-- Populated by UIController -->
+              </div>
+            </section>
+
+            <section class="panel-card" aria-label="Household Leaderboard">
+              <div class="panel-head">
+                <h3>🏆 Household Leaderboard</h3>
+                <span class="panel-meta">Sorted by Best Altitude</span>
+              </div>
+              <div id="leaderboard-list" class="leaderboard-list">
+                <!-- Populated by UIController -->
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
+
+      <!-- GAMEPLAY SCREEN -->
+      <section id="screen-game" class="screen game-screen hidden" aria-label="Climbing Arena">
+        <div class="game-layout">
+          <div class="canvas-pane">
+            <canvas id="obby-canvas" aria-label="Tower Climbing Game Canvas"></canvas>
+
+            <div class="hud-top">
+              <div class="hud-group">
+                <div class="hud-pill hud-alt">
+                  <span class="hud-label">ALTITUDE</span>
+                  <strong id="hud-alt">0 m</strong>
+                </div>
+                <div class="hud-pill hud-streak">
+                  <span class="hud-label">STREAK</span>
+                  <strong id="hud-streak">0×</strong>
+                </div>
+                <div class="hud-pill hud-gap" id="hud-gap-pill">
+                  <span class="hud-label">HAZARD GAP</span>
+                  <strong id="hud-gap">+8.0 m</strong>
+                </div>
+              </div>
+
+              <div class="hud-alerts">
+                <div id="cryo-badge" class="cryo-badge hidden" aria-live="polite">
+                  ❄️ CRYO-FREEZE <strong id="cryo-timer">5.0s</strong>
+                </div>
+                <div id="ghost-badge" class="ghost-badge hidden">
+                  👻 <span id="ghost-badge-text">Rival</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="control-pane">
+            <div id="question-card" class="question-card">
+              <div class="q-header">
+                <span id="q-badge" class="q-badge">⚡ COMFORT</span>
+                <span id="q-reward" class="q-reward">+4 m</span>
+              </div>
+
+              <div class="q-equation-row">
+                <div id="q-prompt" class="q-prompt" aria-live="polite">6 × 7 = ?</div>
+              </div>
+
+              <div class="answer-well">
+                <div id="answer-display" class="answer-display is-empty" role="status" aria-label="Typed Answer">
+                  ?
+                </div>
+              </div>
+
+              <div id="hint-box" class="hint-box hidden" aria-live="polite">
+                <span class="hint-icon">🚀</span>
+                <span id="hint-text"></span>
+              </div>
+            </div>
+
+            <div class="numpad" id="numpad" role="group" aria-label="Number Pad">
+              <button class="num-key" type="button" data-key="1">1</button>
+              <button class="num-key" type="button" data-key="2">2</button>
+              <button class="num-key" type="button" data-key="3">3</button>
+              <button class="num-key" type="button" data-key="4">4</button>
+              <button class="num-key" type="button" data-key="5">5</button>
+              <button class="num-key" type="button" data-key="6">6</button>
+              <button class="num-key" type="button" data-key="7">7</button>
+              <button class="num-key" type="button" data-key="8">8</button>
+              <button class="num-key" type="button" data-key="9">9</button>
+              <button class="num-key key-back" type="button" data-key="back" aria-label="Backspace">⌫</button>
+              <button class="num-key" type="button" data-key="0">0</button>
+              <button class="num-key key-jump" type="button" data-key="submit">JUMP!</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- GAME OVER MODAL -->
+  <div id="modal-gameover" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="go-headline">
+    <div class="modal-card gameover-card">
+      <div id="go-emoji" class="go-emoji" aria-hidden="true">🍲</div>
+      <h2 id="go-headline">Sizzled in Tomato Soup!</h2>
+      <p id="go-sub" class="go-sub">Watch out for the croutons next time!</p>
+
+      <div id="go-pb-banner" class="go-banner go-pb hidden">🏆 NEW PERSONAL BEST!</div>
+      <div id="go-hat-banner" class="go-banner go-hat hidden"></div>
+
+      <div class="go-stats">
+        <div class="go-stat">
+          <span>Altitude</span>
+          <strong id="go-alt">0 m</strong>
+        </div>
+        <div class="go-stat">
+          <span>Best Streak</span>
+          <strong id="go-streak">0×</strong>
+        </div>
+        <div class="go-stat">
+          <span>Accuracy</span>
+          <strong id="go-acc">100%</strong>
+        </div>
+        <div class="go-stat">
+          <span>vs Ghost Rival</span>
+          <strong id="go-ghost">—</strong>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="btn-retry" class="btn-chunky btn-start" type="button">🔁 Climb Again</button>
+        <button id="btn-go-lobby" class="btn-chunky btn-secondary" type="button">🏠 Lobby</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PARENT CALIBRATION MODAL -->
+  <div id="modal-parent" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="parent-title">
+    <div class="modal-card parent-card">
+      <div class="parent-head">
+        <div>
+          <h2 id="parent-title">⚙️ Parent Calibration &amp; Mastery</h2>
+          <p class="parent-note">Adjust weight class, active times tables, and review fact mastery.</p>
+        </div>
+        <button id="btn-parent-close" class="btn-close" type="button" aria-label="Close Parent Modal">✕</button>
+      </div>
+
+      <div id="parent-tabs" class="parent-tabs" role="tablist">
+        <!-- Populated by UIController -->
+      </div>
+
+      <div class="parent-body">
+        <div class="parent-row">
+          <label class="field-group">
+            <span>Player Name</span>
+            <input id="parent-name" type="text" maxlength="16" autocomplete="off">
+          </label>
+
+          <div class="field-group">
+            <span>Weight Class</span>
+            <div class="seg-control" id="parent-weight-toggle">
+              <button type="button" data-weight="junior" class="seg-btn">Junior (0.78 m/s)</button>
+              <button type="button" data-weight="pro" class="seg-btn">Pro (1.25 m/s + ?×)</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-head">
+            <h3>Comfort Tables (70% deck — fast streaks)</h3>
+            <span class="table-hint">Tap to toggle 2×–15×</span>
+          </div>
+          <div id="comfort-toggles" class="table-grid"></div>
+        </div>
+
+        <div class="table-section">
+          <div class="table-section-head">
+            <h3>Target / New Tables (20% deck — triggers 5s Cryo-Freeze)</h3>
+            <span class="table-hint">Tap to toggle 2×–15×</span>
+          </div>
+          <div id="new-toggles" class="table-grid"></div>
+        </div>
+
+        <div class="heatmap-section">
+          <div class="table-section-head">
+            <h3>12×12 Mastery Heatmap</h3>
+            <div class="heatmap-legend">
+              <span class="leg-item"><i class="dot hm-green"></i>Mastered (3+)</span>
+              <span class="leg-item"><i class="dot hm-amber"></i>Practicing</span>
+              <span class="leg-item"><i class="dot hm-red"></i>Needs Work</span>
+              <span class="leg-item"><i class="dot hm-grey"></i>Unseen</span>
+            </div>
+          </div>
+          <div id="mastery-heatmap" class="mastery-heatmap"></div>
+          <div id="extended-facts" class="extended-facts"></div>
+        </div>
+      </div>
+
+      <div class="parent-footer">
+        <button id="btn-reset-facts" class="btn-chunky btn-danger" type="button">🗑️ Reset Fact Stats</button>
+        <button id="btn-parent-save" class="btn-chunky btn-start" type="button">✅ Save &amp; Close</button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
